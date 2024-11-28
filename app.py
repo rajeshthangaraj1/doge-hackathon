@@ -20,8 +20,8 @@ st.title("DOGE Hackathon - RAG - Document Search with Chat")
 # Left Side: File Upload
 st.sidebar.header("Upload Documents")
 uploaded_file = st.sidebar.file_uploader("Upload PDF, Excel, Docx, or Txt", type=["pdf", "xlsx", "docx", "txt"])
-document_name = st.sidebar.text_input("Document Name", "Untitled Document")
-document_description = st.sidebar.text_area("Document Description", "Provide a brief description of the document.")
+document_name = st.sidebar.text_input("Document Name", "")
+document_description = st.sidebar.text_area("Document Description", "")
 
 if st.sidebar.button("Process File"):
     if uploaded_file:
