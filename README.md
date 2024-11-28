@@ -28,21 +28,24 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
    
 2. Create a virtual environment:
 
-   ```python -m venv venv
-   source venv/bin/activate  # For Linux/Mac
-  venv\Scripts\activate     # For Windows```
+   ```python -m venv venv```
+   ```source venv/bin/activate```  # For Linux/Mac
+   ```venv\Scripts\activate```     # For Windows
   
 3. Install dependencies:
   ```pip install -r requirements.txt```
 
 4. Set up the .env file:
    Create a .env file in the root directory with the following variables:
-   OPENAI_API_KEY=your-openai-api-key
-   VECTOR_DB_PATH_DB=vectorstore
+   ```OPENAI_API_KEY=your-openai-api-key
+   VECTOR_DB_PATH_DB=vectorstore```
 
 ### Usage
+
 1.Start the Streamlit application:
-  streamlit run app.py
+
+  ```streamlit run app.py```
+  
 2.Upload your documents via the sidebar interface:
 
   Supported formats: .pdf, .xlsx, .docx, .txt.
