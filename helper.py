@@ -2,14 +2,12 @@ import os
 import hashlib
 import io
 import json
-from datetime import datetime
 import pandas as pd
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from PyPDF2 import PdfReader
 from docx import Document
-# from langchain.llms import OpenAI
 from langchain_openai import ChatOpenAI
 
 
@@ -110,7 +108,7 @@ class ChatHandler:
                     )
                     # Use similarity_search_with_score instead of similarity_search
                     response_with_scores = vector_store.similarity_search_with_score(question, k=3)
-                    print(response_with_scores)
+                    # print(response_with_scores)
 
                     # Filter responses based on score threshold
                     filtered_responses = [
@@ -120,21 +118,40 @@ class ChatHandler:
 
         if responses:
             prompt = self._generate_prompt(question, responses)
-            print(prompt)
-            return self.llm(prompt)
+            llm_response = self.llm.invoke(prompt)
+            # Extract the "content" part of the response
+            return llm_response.content if llm_response else "Could not extract an answer."
         return "No relevant documents found or context is insufficient to answer your question."
 
     def _generate_prompt(self, question, documents):
-        """Generate a structured prompt with clear context and question focus."""
-        context = "\n".join([f"Excerpt {i + 1}:\n{doc.strip()}" for i, doc in enumerate(documents[:3])])
+        """
+        Generate a structured and detailed prompt for the RAG model to answer questions based on provided documents.
+        The response should be step-by-step, accurate, and optimized for analytical queries.
+        """
+        context = "\n".join([f"Document {i + 1}:\n{doc.strip()}" for i, doc in enumerate(documents[:3])])
         prompt = f"""
-        You are an AI assistant that answers questions based on provided document excerpts.
-        Your task is to analyze the context and provide a clear and accurate answer to the user's question.
+        You are an advanced AI assistant specializing in analyzing complex queries and providing precise, actionable insights.
+        You have access to excerpts from key documents related to energy consumption in the UK.
+
+        Your task is:
+        1. Analyze the provided context and extract relevant information.
+        2. Answer the user's query step-by-step with clear reasoning.
+        3. Highlight any areas of uncertainty if the context does not provide sufficient details.
+        4. Provide actionable strategies, supporting them with data or reasoning from the context.
+        5. Explain the environmental and cost-saving benefits where applicable.
 
         Context:
         {context}
 
-        Question: {question}
-        Answer concisely and clearly based on the context above. If additional calculations or interpretations are needed, provide them explicitly.
+        User Query:
+        {question}
+
+        Instructions:
+        - Begin by identifying relevant sections of the context.
+        - Provide a detailed, step-by-step response addressing each part of the user's query.
+        - Support your answers with evidence from the context, or state if additional data is required.
+        - Present your answer in a clear, concise format suitable for decision-making.
+
+        Your response should demonstrate expertise and provide actionable recommendations.
         """
         return prompt

@@ -2,14 +2,12 @@ import streamlit as st
 import os
 from dotenv import load_dotenv
 from helper import FileHandler, ChatHandler
-from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings
 
 # Load environment variables
 load_dotenv()
 
 # Initialize Handlers
-VECTOR_DB_PATH = os.getenv('VECTOR_DB_PATH_DB', 'vectorstore')
+VECTOR_DB_PATH = os.getenv('VECTOR_DB_PATH_DB', 'vectordb/openai_dbstore/db')
 os.makedirs(VECTOR_DB_PATH, exist_ok=True)
 
 file_handler = FileHandler(VECTOR_DB_PATH)
@@ -17,7 +15,7 @@ chat_handler = ChatHandler(VECTOR_DB_PATH)
 
 # Streamlit UI
 st.set_page_config(layout="wide", page_title="DOGE Hackathon")
-st.title("DOGE Hackathon - Document Search with Chat")
+st.title("DOGE Hackathon - RAG - Document Search with Chat")
 
 # Left Side: File Upload
 st.sidebar.header("Upload Documents")
