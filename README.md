@@ -22,8 +22,8 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
 
 1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/your-repo-name/doge-hackathon-rag.git
+   
+   ```git clone https://github.com/your-repo-name/doge-hackathon-rag.git
    cd doge-hackathon-rag```
    
 2. Create a virtual environment:
@@ -37,8 +37,8 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
 
 4. Set up the .env file:
    Create a .env file in the root directory with the following variables:
-   ```OPENAI_API_KEY=your-openai-api-key
-   VECTOR_DB_PATH_DB=vectorstore
+   ```OPENAI_API_KEY=your-openai-api-key```
+   ```VECTOR_DB_PATH_DB=vectorstore```
 
 ### Usage
 
