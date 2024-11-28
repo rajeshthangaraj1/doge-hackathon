@@ -38,7 +38,7 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
 4. Set up the .env file:
    Create a .env file in the root directory with the following variables:
    ```OPENAI_API_KEY=your-openai-api-key
-   VECTOR_DB_PATH_DB=vectorstore```
+   VECTOR_DB_PATH_DB=vectorstore
 
 ### Usage
 
