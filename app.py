@@ -37,9 +37,12 @@ if st.sidebar.button("Process File"):
 # Right Side: Chat Interface
 st.header("Ask Questions")
 user_question = st.text_input("Type your question here:")
+model_choice = st.selectbox("Select Model", ["OpenAI", "Grok"])
+
 if st.button("Submit Question"):
     if user_question:
-        response = chat_handler.answer_question(user_question)
+        with st.spinner("Processing your question..."):
+            response = chat_handler.answer_question(user_question, model_choice)
         st.write(response)
     else:
         st.warning("Please enter a question.")

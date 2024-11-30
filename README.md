@@ -39,6 +39,7 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
    Create a .env file in the root directory with the following variables:
    ```OPENAI_API_KEY=your-openai-api-key```
    ```VECTOR_DB_PATH_DB=vectorstore```
+   ```GROK_API_KEY=your-grok-api-key```
 
 ### Usage
 

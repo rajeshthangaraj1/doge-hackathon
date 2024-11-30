@@ -5,19 +5,17 @@ import json
 import pandas as pd
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import TextSplitter
 from PyPDF2 import PdfReader
 from docx import Document
 from langchain_openai import ChatOpenAI
-
+import requests
 
 
 class FileHandler:
     def __init__(self, vector_db_path):
         self.vector_db_path = vector_db_path
         self.embeddings = OpenAIEmbeddings(api_key=os.getenv('OPENAI_API_KEY'))
-
-
 
     def handle_file_upload(self, file, document_name, document_description):
         try:
@@ -33,22 +31,20 @@ class FileHandler:
 
             # Process file based on type
             if file.name.endswith(".pdf"):
-                texts = self.load_and_split_pdf(file)
+                texts, metadatas = self.load_and_split_pdf(file)
             elif file.name.endswith(".docx"):
-                texts = self.load_and_split_docx(file)
+                texts, metadatas = self.load_and_split_docx(file)
             elif file.name.endswith(".txt"):
-                texts = self.load_and_split_txt(content)
+                texts, metadatas = self.load_and_split_txt(content)
             elif file.name.endswith(".xlsx"):
-                texts = self.load_and_split_table(content)
+                texts, metadatas = self.load_and_split_table(content)
             else:
                 raise ValueError("Unsupported file format.")
 
-            # Debugging: Verify the texts
             if not texts:
                 return {"message": "No text extracted from the file. Check the file content."}
 
-            # Create and save FAISS vector store
-            vector_store = FAISS.from_texts(texts, self.embeddings)
+            vector_store = FAISS.from_texts(texts, self.embeddings, metadatas=metadatas)
             vector_store.save_local(vector_store_dir)
 
             metadata = {
@@ -64,40 +60,66 @@ class FileHandler:
             return {"message": "File processed successfully."}
         except Exception as e:
             return {"message": f"Error processing file: {str(e)}"}
+
     def load_and_split_pdf(self, file):
         reader = PdfReader(file)
-        text = "".join([page.extract_text() for page in reader.pages])
-        return self.split_text(text)
+        texts = []
+        metadatas = []
+        for page_num, page in enumerate(reader.pages):
+            text = page.extract_text()
+            if text:
+                texts.append(text)
+                metadatas.append({"page_number": page_num + 1})
+        return texts, metadatas
 
     def load_and_split_docx(self, file):
         doc = Document(file)
-        text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
-        return self.split_text(text)
+        texts = []
+        metadatas = []
+        for para_num, paragraph in enumerate(doc.paragraphs):
+            if paragraph.text:
+                texts.append(paragraph.text)
+                metadatas.append({"paragraph_number": para_num + 1})
+        return texts, metadatas
 
     def load_and_split_txt(self, content):
-        return self.split_text(content.decode("utf-8"))
+        text = content.decode("utf-8")
+        lines = text.split('\n')
+        texts = [line for line in lines if line.strip()]
+        metadatas = [{}] * len(texts)
+        return texts, metadatas
 
     def load_and_split_table(self, content):
         excel_data = pd.read_excel(io.BytesIO(content), sheet_name=None)
-        combined_text = ""
+        texts = []
+        metadatas = []
         for sheet_name, df in excel_data.items():
-            df = df.dropna(how='all', axis=0).dropna(how='all', axis=1)  # Drop empty rows/columns
-            combined_text += f"\n\nSheet Name: {sheet_name}\n"
-            combined_text += df.to_string(index=False)
-        return self.split_text(combined_text)
+            df = df.dropna(how='all', axis=0).dropna(how='all', axis=1)
+            df = df.fillna('N/A')
+            for _, row in df.iterrows():
+                row_dict = row.to_dict()
+                # Combine key-value pairs into a string
+                row_text = ', '.join([f"{key}: {value}" for key, value in row_dict.items()])
+                texts.append(row_text)
+                metadatas.append({"sheet_name": sheet_name})
+        return texts, metadatas
 
-    def split_text(self, text):
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-        return text_splitter.split_text(text)
 
 
 class ChatHandler:
     def __init__(self, vector_db_path):
         self.vector_db_path = vector_db_path
         self.embeddings = OpenAIEmbeddings(api_key=os.getenv('OPENAI_API_KEY'))
-        self.llm = ChatOpenAI(model="gpt-4", api_key=os.getenv('OPENAI_API_KEY'), max_tokens=150, temperature=0.2)
+        self.llm_openai = ChatOpenAI(
+            model_name="gpt-4",
+            api_key=os.getenv('OPENAI_API_KEY'),
+            max_tokens=500,
+            temperature=0.2,
+        )
+        self.grok_base_url = "https://api.x.ai/v1"
+        self.grok_api_key = os.getenv('GROK_API_KEY')
 
-    def answer_question(self, question):
+    def answer_question(self, question, model_choice):
         responses = []
         for root, dirs, files in os.walk(self.vector_db_path):
             for dir in dirs:
@@ -106,52 +128,75 @@ class ChatHandler:
                     vector_store = FAISS.load_local(
                         os.path.join(root, dir), self.embeddings, allow_dangerous_deserialization=True
                     )
-                    # Use similarity_search_with_score instead of similarity_search
-                    response_with_scores = vector_store.similarity_search_with_score(question, k=3)
-                    # print(response_with_scores)
-
-                    # Filter responses based on score threshold
-                    filtered_responses = [
-                        doc.page_content for doc, score in response_with_scores if score > 0.3
-                    ]
+                    response_with_scores = vector_store.similarity_search_with_relevance_scores(question, k=5)
+                    filtered_responses = [doc.page_content for doc, score in response_with_scores]
                     responses.extend(filtered_responses)
 
         if responses:
             prompt = self._generate_prompt(question, responses)
-            llm_response = self.llm.invoke(prompt)
-            # Extract the "content" part of the response
-            return llm_response.content if llm_response else "Could not extract an answer."
+            if model_choice == "OpenAI":
+                return self._ask_openai(prompt)
+            elif model_choice == "Grok":
+                return self._ask_grok(prompt)
+
         return "No relevant documents found or context is insufficient to answer your question."
 
+    def _ask_openai(self, prompt):
+        print('openai')
+        llm_response = self.llm_openai.generate([prompt])
+        if llm_response and llm_response.generations and llm_response.generations[0]:
+            return llm_response.generations[0][0].text.strip()
+        else:
+            return "Could not extract an answer."
+
+    def _ask_grok(self, prompt):
+        print('grok')
+        endpoint = f"{self.grok_base_url}/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {self.grok_api_key}",
+            "Content-Type": "application/json",
+        }
+        data = {
+            "model": "grok-beta",
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 500,
+            "temperature": 0.2,
+        }
+        response = requests.post(endpoint, headers=headers, json=data)
+        if response.status_code == 200:
+            response_json = response.json()
+            # print("Grok API Response:", response_json)  # For debugging purposes
+            # Extract the content from the 'choices' array
+            choices = response_json.get("choices", [])
+            if choices and "message" in choices[0]:
+                return choices[0]["message"]["content"].strip()
+            else:
+                return "Response format unexpected: Could not extract the answer."
+        else:
+            return f"Error: {response.status_code}, {response.text}"
+
     def _generate_prompt(self, question, documents):
+
         """
         Generate a structured and detailed prompt for the RAG model to answer questions based on provided documents.
         The response should be step-by-step, accurate, and optimized for analytical queries.
         """
-        context = "\n".join([f"Document {i + 1}:\n{doc.strip()}" for i, doc in enumerate(documents[:3])])
+        context = "\n".join([f"Document {i + 1}:\n{doc.strip()}" for i, doc in enumerate(documents[:5])])
         prompt = f"""
-        You are an advanced AI assistant specializing in analyzing complex queries and providing precise, actionable insights.
-        You have access to excerpts from key documents related to energy consumption in the UK.
-
-        Your task is:
-        1. Analyze the provided context and extract relevant information.
-        2. Answer the user's query step-by-step with clear reasoning.
-        3. Highlight any areas of uncertainty if the context does not provide sufficient details.
-        4. Provide actionable strategies, supporting them with data or reasoning from the context.
-        5. Explain the environmental and cost-saving benefits where applicable.
-
-        Context:
-        {context}
-
-        User Query:
-        {question}
-
-        Instructions:
-        - Begin by identifying relevant sections of the context.
-        - Provide a detailed, step-by-step response addressing each part of the user's query.
-        - Support your answers with evidence from the context, or state if additional data is required.
-        - Present your answer in a clear, concise format suitable for decision-making.
-
-        Your response should demonstrate expertise and provide actionable recommendations.
-        """
+            You are an advanced AI assistant specializing in analyzing complex queries and providing precise, actionable insights.
+            You have access to the following data:
+            
+            {context}
+            
+            Based on this data, please answer the following question:
+            
+            Question: {question}
+            
+            Instructions:
+            - Analyze the provided data carefully.
+            - Provide a detailed, step-by-step response addressing the question.
+            - Support your answer with specific data points from the context.
+            - If data is missing, state that additional information is required.
+            - Present your answer in a clear and concise manner.
+            """
         return prompt
