@@ -63,7 +63,7 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
 
 1.**Start the Streamlit application:**
 
-     ```bash
+    ```bash
     streamlit run app.py
     ```
   
