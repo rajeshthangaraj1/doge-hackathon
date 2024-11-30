@@ -62,9 +62,11 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
 ### Usage
 
 1.**Start the Streamlit application:**
+
     ```bash
     streamlit run app.py
     ```
+    
 2.**Upload your documents via the sidebar interface:**
 
   - Supported formats: `.pdf`, `.xlsx`, `.docx`, `.txt`.
