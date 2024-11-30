@@ -142,7 +142,7 @@ class ChatHandler:
         return "No relevant documents found or context is insufficient to answer your question."
 
     def _ask_openai(self, prompt):
-        print('openai')
+        # print('openai')
         llm_response = self.llm_openai.generate([prompt])
         if llm_response and llm_response.generations and llm_response.generations[0]:
             return llm_response.generations[0][0].text.strip()
@@ -150,7 +150,7 @@ class ChatHandler:
             return "Could not extract an answer."
 
     def _ask_grok(self, prompt):
-        print('grok')
+        # print('grok')
         endpoint = f"{self.grok_base_url}/chat/completions"
         headers = {
             "Authorization": f"Bearer {self.grok_api_key}",
@@ -176,27 +176,59 @@ class ChatHandler:
             return f"Error: {response.status_code}, {response.text}"
 
     def _generate_prompt(self, question, documents):
+        """
+        Generate a structured prompt tailored to analyze government energy consumption data
+        and answer questions effectively using the provided documents.
+        """
+        context = "\n".join(
+            [f"Document {i + 1}:\n{doc.strip()}" for i, doc in enumerate(documents[:5])]
+        )
 
-        """
-        Generate a structured and detailed prompt for the RAG model to answer questions based on provided documents.
-        The response should be step-by-step, accurate, and optimized for analytical queries.
-        """
-        context = "\n".join([f"Document {i + 1}:\n{doc.strip()}" for i, doc in enumerate(documents[:5])])
         prompt = f"""
-            You are an advanced AI assistant specializing in analyzing complex queries and providing precise, actionable insights.
-            You have access to the following data:
-            
-            {context}
-            
-            Based on this data, please answer the following question:
-            
-            Question: {question}
-            
-            Instructions:
-            - Analyze the provided data carefully.
-            - Provide a detailed, step-by-step response addressing the question.
-            - Support your answer with specific data points from the context.
-            - If data is missing, state that additional information is required.
-            - Present your answer in a clear and concise manner.
-            """
+    You are an advanced AI assistant with expertise in energy data analysis, resource optimization, 
+    and sustainability practices. Your role is to analyze government energy consumption data 
+    to identify inefficiencies, propose actionable strategies, and quantify potential impacts.
+
+    ### Data Provided:
+    The following documents contain detailed information about energy productivity, consumption trends, 
+    and inefficiencies in various sectors:
+    {context}
+
+    ### Question:
+    {question}
+
+    ### Instructions:
+    1. **Highlight Areas of Energy Waste**:
+       - Identify inefficiencies such as underutilized facilities, overconsumption in specific sectors, or
+         energy system losses.
+       - Use data points from the documents to back your observations.
+
+    2. **Suggest Strategies for Optimization**:
+       - Recommend actionable steps like upgrading equipment, adopting renewable energy sources,
+         or optimizing resource allocation.
+       - Ensure suggestions are feasible and tailored to the identified inefficiencies.
+
+    3. **Demonstrate Cost-Saving and Environmental Benefits**:
+       - Provide quantitative estimates of potential cost savings from the suggested strategies.
+       - Highlight the environmental benefits, such as reductions in CO2 emissions or energy waste.
+
+    4. **Present the Response Clearly**:
+       - Organize your findings in a step-by-step format.
+       - Use tables, bullet points, or concise paragraphs for clarity.
+
+    ### Example Output Format:
+    - **Energy Waste Identified**:
+      1. ...
+      2. ...
+
+    - **Optimization Strategies**:
+      1. ...
+      2. ...
+
+    - **Cost-Saving and Environmental Benefits**:
+      - Savings: $...
+      - Environmental Impact: ...
+
+    Please ensure the response is data-driven, actionable, and easy to understand.
+    """
         return prompt
