@@ -71,8 +71,13 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
 
   - Supported formats: `.pdf`, `.xlsx`, `.docx`, `.txt`.
   - Provide a name and a brief description of the document.
+  - A sample file is available in the **sample_dataset** folder.
 
 3.**Ask questions in the chat interface on the right side of the screen.**
+
+   - Example of a question: "Highlight areas of energy waste in government facilities and suggest strategies to optimize usage. Quantify potential savings and environmental impacts."
+"""
+
 
 
 
