@@ -46,27 +46,33 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
         venv\Scripts\activate
         ```
   
-3. Install dependencies:
-  ```pip install -r requirements.txt```
+3. **Install dependencies:**
+  ```bash
+    pip install -r requirements.txt
+    ```
 
-4. Set up the .env file:
-   Create a .env file in the root directory with the following variables:
-   ```OPENAI_API_KEY=your-openai-api-key```
-   ```VECTOR_DB_PATH_DB=vectorstore```
-   ```GROK_API_KEY=your-grok-api-key```
+4. **Set up the `.env` file:**
+   Create a `.env` file in the root directory with the following variables:
+
+    ```env
+    OPENAI_API_KEY=your-openai-api-key
+    VECTOR_DB_PATH_DB=vectorstore
+    GROK_API_KEY=your-grok-api-key
 
 ### Usage
 
-1.Start the Streamlit application:
+1.**Start the Streamlit application:**
 
-  ```streamlit run app.py```
+  ```bash
+    streamlit run app.py
+    ```
   
-2.Upload your documents via the sidebar interface:
+2.**Upload your documents via the sidebar interface:**
 
-  Supported formats: .pdf, .xlsx, .docx, .txt.
-  Provide a name and a brief description of the document.
+  - Supported formats: `.pdf`, `.xlsx`, `.docx`, `.txt`.
+  - Provide a name and a brief description of the document.
 
-3.Ask questions in the chat interface on the right side of the screen.
+3.**Ask questions in the chat interface on the right side of the screen.**
 
 
 
