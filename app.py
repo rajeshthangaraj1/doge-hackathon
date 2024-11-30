@@ -7,7 +7,7 @@ from helper import FileHandler, ChatHandler
 load_dotenv()
 
 # Initialize Handlers
-VECTOR_DB_PATH = os.getenv('VECTOR_DB_PATH_DB', 'vectordb/openai_dbstore/db')
+VECTOR_DB_PATH = os.getenv('VECTOR_DB_PATH_DB', 'vectordb')
 os.makedirs(VECTOR_DB_PATH, exist_ok=True)
 
 file_handler = FileHandler(VECTOR_DB_PATH)
@@ -25,12 +25,13 @@ document_description = st.sidebar.text_area("Document Description", "")
 
 if st.sidebar.button("Process File"):
     if uploaded_file:
-        response = file_handler.handle_file_upload(
-            file=uploaded_file,
-            document_name=document_name,
-            document_description=document_description,
-        )
-        st.sidebar.success(f"File processed: {response['message']}")
+        with st.spinner("Processing your file..."):
+            response = file_handler.handle_file_upload(
+                file=uploaded_file,
+                document_name=document_name,
+                document_description=document_description,
+            )
+            st.sidebar.success(f"File processed: {response['message']}")
     else:
         st.sidebar.warning("Please upload a file before processing.")
 
