@@ -47,7 +47,7 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
         ```
   
 3. **Install dependencies:**
-  ```bash
+   ```bash
     pip install -r requirements.txt
     ```
 
