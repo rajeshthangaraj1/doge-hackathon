@@ -75,8 +75,7 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
 
 3.**Ask questions in the chat interface on the right side of the screen.**
 
-   - Example of a question: "Highlight areas of energy waste in government facilities and suggest strategies to optimize usage. Quantify potential savings and environmental impacts."
-"""
+   - Example of a question: **Highlight areas of energy waste in government facilities and suggest strategies to optimize usage. Quantify potential savings and environmental impacts.**
 
 
 
