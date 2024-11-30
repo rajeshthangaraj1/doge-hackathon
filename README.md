@@ -14,23 +14,37 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
 
 ### Prerequisites
 
-1. Python 3.10 or higher
-2. Pip or a compatible package manager
-3. An OpenAI API Key
+1. **Python 3.10** or higher
+2. **Pip** or a compatible package manager
+3. An **OpenAI API Key** and **GROK API Key**
 
 ### Setup Instructions
 
-1. Clone the repository:
+1. **Clone the repository:**
 
    
-   ```git clone https://github.com/your-repo-name/doge-hackathon-rag.git```
-   ```cd doge-hackathon-rag```
+   ```bash
+    git clone https://github.com/your-repo-name/doge-hackathon-rag.git
+    cd doge-hackathon-rag
+    ```
    
-2. Create a virtual environment:
+2. **Create a virtual environment:**
 
-   ```python -m venv venv```
-   ```source venv/bin/activate```  # For Linux/Mac
-   ```venv\Scripts\activate```     # For Windows
+   ```bash
+    python -m venv venv
+    ```
+
+    - **For Linux/Mac:**
+
+        ```bash
+        source venv/bin/activate
+        ```
+
+    - **For Windows:**
+
+        ```bash
+        venv\Scripts\activate
+        ```
   
 3. Install dependencies:
   ```pip install -r requirements.txt```
