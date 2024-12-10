@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Ignore Streamlit secrets
+.streamlit/secrets.toml
+
 # C extensions
 *.so
 

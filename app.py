@@ -7,19 +7,23 @@ from helper import FileHandler, ChatHandler
 load_dotenv()
 
 # Initialize Handlers
-VECTOR_DB_PATH = os.getenv('VECTOR_DB_PATH_DB', 'vectordb')
+
+# VECTOR_DB_PATH = os.getenv('VECTOR_DB_PATH_DB', 'vectordb')
+VECTOR_DB_PATH = st.secrets["VECTOR_DB_PATH_DB"]
+OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+GROK_API_KEY = st.secrets["GROK_API_KEY"]
 os.makedirs(VECTOR_DB_PATH, exist_ok=True)
 
-file_handler = FileHandler(VECTOR_DB_PATH)
-chat_handler = ChatHandler(VECTOR_DB_PATH)
+file_handler = FileHandler(VECTOR_DB_PATH,OPENAI_API_KEY,GROK_API_KEY)
+chat_handler = ChatHandler(VECTOR_DB_PATH,OPENAI_API_KEY,GROK_API_KEY)
 
 # Streamlit UI
 st.set_page_config(layout="wide", page_title="DOGE Hackathon")
-st.title("DOGE Hackathon - RAG - Document Search with Chat")
+st.title("DOGE Hackathon")
 
 # Left Side: File Upload
 st.sidebar.header("Upload Documents")
-uploaded_file = st.sidebar.file_uploader("Upload PDF, Excel, Docx, or Txt", type=["pdf", "xlsx", "docx", "txt"])
+uploaded_file = st.sidebar.file_uploader("Upload PDF, Excel, Docx, or Txt", type=["pdf", "xlsx", "docx", "txt", "csv"])
 document_name = st.sidebar.text_input("Document Name", "")
 document_description = st.sidebar.text_area("Document Description", "")
 
@@ -38,12 +42,12 @@ if st.sidebar.button("Process File"):
 # Right Side: Chat Interface
 st.header("Ask Questions")
 user_question = st.text_input("Type your question here:")
-model_choice = st.selectbox("Select Model", ["OpenAI", "Grok"])
+# model_choice = st.selectbox("Select Model", ["Grok"])
 
 if st.button("Submit Question"):
     if user_question:
         with st.spinner("Processing your question..."):
-            response = chat_handler.answer_question(user_question, model_choice)
+            response = chat_handler.answer_question(user_question)
         st.write(response)
     else:
         st.warning("Please enter a question.")

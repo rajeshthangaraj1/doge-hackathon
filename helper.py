@@ -13,9 +13,32 @@ import requests
 
 
 class FileHandler:
-    def __init__(self, vector_db_path):
+    def __init__(self, vector_db_path,open_api_key,grok_api_key):
         self.vector_db_path = vector_db_path
-        self.embeddings = OpenAIEmbeddings(api_key=os.getenv('OPENAI_API_KEY'))
+        self.embeddings = OpenAIEmbeddings(api_key=open_api_key)
+        self.grok_api_key = grok_api_key
+        self.grok_base_url = "https://api.x.ai/v1"
+
+    def _generate_grok_embedding(self, text):
+        print(self.grok_api_key)
+        """Generate embeddings using the Grok API."""
+        endpoint = f"{self.grok_base_url}/embeddings"
+        headers = {
+            "Authorization": f"Bearer {self.grok_api_key}",
+            "Content-Type": "application/json",
+        }
+        data = {
+            "input": [text],
+            "model": "text-embedding-ada-002",
+        }
+        response = requests.post(endpoint, headers=headers, json=data)
+        if response.status_code == 200:
+            response_json = response.json()
+            return response_json["data"][0]["embedding"]["Float"]
+        else:
+            raise ValueError(
+                f"Grok API error: {response.status_code} - {response.text}"
+            )
 
     def handle_file_upload(self, file, document_name, document_description):
         try:
@@ -38,13 +61,20 @@ class FileHandler:
                 texts, metadatas = self.load_and_split_txt(content)
             elif file.name.endswith(".xlsx"):
                 texts, metadatas = self.load_and_split_table(content)
+            elif file.name.endswith(".csv"):
+                texts, metadatas = self.load_and_split_csv(content)
             else:
                 raise ValueError("Unsupported file format.")
 
             if not texts:
                 return {"message": "No text extracted from the file. Check the file content."}
 
+            # # Generate embeddings using Grok API
+            # embeddings = [self._generate_grok_embedding(text) for text in texts]
+            # print(embeddings)
+
             vector_store = FAISS.from_texts(texts, self.embeddings, metadatas=metadatas)
+            # vector_store = FAISS.from_embeddings(embeddings, metadatas=metadatas)
             vector_store.save_local(vector_store_dir)
 
             metadata = {
@@ -104,22 +134,35 @@ class FileHandler:
                 metadatas.append({"sheet_name": sheet_name})
         return texts, metadatas
 
+    def load_and_split_csv(self, content):
+        csv_data = pd.read_csv(io.StringIO(content.decode('utf-8')))
+        texts = []
+        metadatas = []
+        csv_data = csv_data.dropna(how='all', axis=0).dropna(how='all', axis=1)
+        csv_data = csv_data.fillna('N/A')
+        for _, row in csv_data.iterrows():
+            row_dict = row.to_dict()
+            row_text = ', '.join([f"{key}: {value}" for key, value in row_dict.items()])
+            texts.append(row_text)
+            metadatas.append({"row_index": _})
+        return texts, metadatas
+
 
 
 class ChatHandler:
-    def __init__(self, vector_db_path):
+    def __init__(self, vector_db_path,open_api_key,grok_api_key):
         self.vector_db_path = vector_db_path
-        self.embeddings = OpenAIEmbeddings(api_key=os.getenv('OPENAI_API_KEY'))
+        self.embeddings = OpenAIEmbeddings(api_key=open_api_key)
         self.llm_openai = ChatOpenAI(
             model_name="gpt-4",
-            api_key=os.getenv('OPENAI_API_KEY'),
+            api_key=open_api_key,
             max_tokens=500,
             temperature=0.2,
         )
         self.grok_base_url = "https://api.x.ai/v1"
-        self.grok_api_key = os.getenv('GROK_API_KEY')
+        self.grok_api_key = grok_api_key
 
-    def answer_question(self, question, model_choice):
+    def answer_question(self, question):
         responses = []
         for root, dirs, files in os.walk(self.vector_db_path):
             for dir in dirs:
@@ -128,16 +171,16 @@ class ChatHandler:
                     vector_store = FAISS.load_local(
                         os.path.join(root, dir), self.embeddings, allow_dangerous_deserialization=True
                     )
-                    response_with_scores = vector_store.similarity_search_with_relevance_scores(question, k=5)
+                    response_with_scores = vector_store.similarity_search_with_relevance_scores(question, k=100)
                     filtered_responses = [doc.page_content for doc, score in response_with_scores]
                     responses.extend(filtered_responses)
 
         if responses:
             prompt = self._generate_prompt(question, responses)
-            if model_choice == "OpenAI":
-                return self._ask_openai(prompt)
-            elif model_choice == "Grok":
-                return self._ask_grok(prompt)
+            # if model_choice == "OpenAI":
+            #     return self._ask_openai(prompt)
+            # elif model_choice == "Grok":
+            return self._ask_grok(prompt)
 
         return "No relevant documents found or context is insufficient to answer your question."
 
