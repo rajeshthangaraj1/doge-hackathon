@@ -1,4 +1,4 @@
-# DOGE Hackathon - RAG - Document Search with Chat
+# DOGE Hackathon - Energy Efficiency in Government
 
 This project is a Retrieval-Augmented Generation (RAG) system that allows users to upload documents, store them in a vector database, and query them using a conversational AI assistant powered by GROK model.
 
@@ -51,13 +51,13 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
     pip install -r requirements.txt
     ```
 
-4. **Set up the `.env` file:**
-   Create a `.env` file in the root directory with the following variables:
+4. **Set up the `.streamlit/secrets.toml` file:**
+   Create a secrets.toml file inside the .streamlit folder in the root directory with the following variables:
 
     ```env
-    OPENAI_API_KEY=your-openai-api-key
-    VECTOR_DB_PATH_DB=vectorstore
-    GROK_API_KEY=your-grok-api-key
+    OPENAI_API_KEY = "your-openai-api-key-here"
+    VECTOR_DB_PATH_DB = "./vectordb"
+    GROK_API_KEY = "your-grok-api-key-here"
 
 ### Usage
 
