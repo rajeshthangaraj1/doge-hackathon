@@ -18,8 +18,8 @@ file_handler = FileHandler(VECTOR_DB_PATH,OPENAI_API_KEY,GROK_API_KEY)
 chat_handler = ChatHandler(VECTOR_DB_PATH,OPENAI_API_KEY,GROK_API_KEY)
 
 # Streamlit UI
-st.set_page_config(layout="wide", page_title="DOGE Hackathon")
-st.title("DOGE Hackathon")
+st.set_page_config(layout="wide", page_title="DOGE Hackathon - Reducing Government Waste Effectively")
+st.title("DOGE Hackathon - Energy Efficiency in Government")
 
 # Left Side: File Upload
 st.sidebar.header("Upload Documents")
