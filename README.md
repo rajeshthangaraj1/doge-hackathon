@@ -1,6 +1,6 @@
 # DOGE Hackathon - RAG - Document Search with Chat
 
-This project is a Retrieval-Augmented Generation (RAG) system that allows users to upload documents, store them in a vector database, and query them using a conversational AI assistant powered by OpenAI's GPT-4 and GROK model.
+This project is a Retrieval-Augmented Generation (RAG) system that allows users to upload documents, store them in a vector database, and query them using a conversational AI assistant powered by GROK model.
 
 ## Features
 
