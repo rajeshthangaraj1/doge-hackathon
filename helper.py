@@ -5,10 +5,8 @@ import json
 import pandas as pd
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
-from langchain.text_splitter import TextSplitter
 from PyPDF2 import PdfReader
 from docx import Document
-from langchain_openai import ChatOpenAI
 import requests
 
 
@@ -18,27 +16,6 @@ class FileHandler:
         self.embeddings = OpenAIEmbeddings(api_key=open_api_key)
         self.grok_api_key = grok_api_key
         self.grok_base_url = "https://api.x.ai/v1"
-
-    def _generate_grok_embedding(self, text):
-        print(self.grok_api_key)
-        """Generate embeddings using the Grok API."""
-        endpoint = f"{self.grok_base_url}/embeddings"
-        headers = {
-            "Authorization": f"Bearer {self.grok_api_key}",
-            "Content-Type": "application/json",
-        }
-        data = {
-            "input": [text],
-            "model": "text-embedding-ada-002",
-        }
-        response = requests.post(endpoint, headers=headers, json=data)
-        if response.status_code == 200:
-            response_json = response.json()
-            return response_json["data"][0]["embedding"]["Float"]
-        else:
-            raise ValueError(
-                f"Grok API error: {response.status_code} - {response.text}"
-            )
 
     def handle_file_upload(self, file, document_name, document_description):
         try:
@@ -69,12 +46,8 @@ class FileHandler:
             if not texts:
                 return {"message": "No text extracted from the file. Check the file content."}
 
-            # # Generate embeddings using Grok API
-            # embeddings = [self._generate_grok_embedding(text) for text in texts]
-            # print(embeddings)
 
             vector_store = FAISS.from_texts(texts, self.embeddings, metadatas=metadatas)
-            # vector_store = FAISS.from_embeddings(embeddings, metadatas=metadatas)
             vector_store.save_local(vector_store_dir)
 
             metadata = {
@@ -153,12 +126,6 @@ class ChatHandler:
     def __init__(self, vector_db_path,open_api_key,grok_api_key):
         self.vector_db_path = vector_db_path
         self.embeddings = OpenAIEmbeddings(api_key=open_api_key)
-        self.llm_openai = ChatOpenAI(
-            model_name="gpt-4",
-            api_key=open_api_key,
-            max_tokens=500,
-            temperature=0.2,
-        )
         self.grok_base_url = "https://api.x.ai/v1"
         self.grok_api_key = grok_api_key
 
@@ -177,20 +144,9 @@ class ChatHandler:
 
         if responses:
             prompt = self._generate_prompt(question, responses)
-            # if model_choice == "OpenAI":
-            #     return self._ask_openai(prompt)
-            # elif model_choice == "Grok":
             return self._ask_grok(prompt)
 
         return "No relevant documents found or context is insufficient to answer your question."
-
-    def _ask_openai(self, prompt):
-        # print('openai')
-        llm_response = self.llm_openai.generate([prompt])
-        if llm_response and llm_response.generations and llm_response.generations[0]:
-            return llm_response.generations[0][0].text.strip()
-        else:
-            return "Could not extract an answer."
 
     def _ask_grok(self, prompt):
         # print('grok')

@@ -1,14 +1,19 @@
 # DOGE Hackathon - Energy Efficiency in Government
 
-This project is a Retrieval-Augmented Generation (RAG) system that allows users to upload documents, store them in a vector database, and query them using a conversational AI assistant powered by GROK model.
+This project is a Retrieval-Augmented Generation (RAG) system that allows users to query embedded datasets related to government energy consumption. The system is preloaded with energy datasets in a vector database and provides a conversational AI assistant powered by the GROK model.
 
 ## Features
 
-- Upload PDF, Excel, Docx, or Txt files.
-- Store and index document content in a vector database using FAISS.
-- Ask questions related to the uploaded documents and get precise, step-by-step answers.
+- Preloaded vector database with embedded energy datasets.
+- Query energy datasets using a conversational AI assistant.
 - Supports embedding generation using OpenAI's GPT-4 model.
 - User-friendly interface built with Streamlit.
+
+## Updates
+
+- **File Upload Sidebar:** The file upload functionality is currently hidden as the vector database already contains preloaded energy datasets. 
+- **Re-enable Sidebar:** If needed, uncomment the sidebar code in `app.py` to allow file uploads. Instructions for enabling this feature are provided in the `Usage` section.
+
 
 ## Installation
 
@@ -66,15 +71,19 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
    ```bash
     streamlit run app.py
     ```
-    
-    
-2. **Upload your documents via the sidebar interface:**
+3. **Re-enable Sidebar (Optional):**
+- If you need to upload new documents, enable the sidebar by uncommenting the related code in `app.py`.
+- Instructions:
+  1. Locate the following lines in `app.py`:
+     ```
+     # st.sidebar.header("Upload Documents")
+     # uploaded_file = st.sidebar.file_uploader("Upload PDF, Excel, Docx, or Txt", type=["pdf", "xlsx", "docx", "txt", "csv"])
+     # document_name = st.sidebar.text_input("Document Name", "")
+     # document_description = st.sidebar.text_area("Document Description", "")
+     ```
+  2. Uncomment these lines and restart the application.
 
-  - Supported formats: `.pdf`, `.xlsx`, `.docx`, `.txt`.
-  - Provide a name and a brief description of the document.
-  - A sample file is available in the **sample_dataset** folder.
-
-3. **Ask questions in the chat interface on the right side of the screen.**
+2. **Ask questions in the chat interface on the right side of the screen.**
 
    - Example of a question: **Highlight areas of energy waste in government facilities and suggest strategies to optimize usage. Quantify potential savings and environmental impacts.**
 
