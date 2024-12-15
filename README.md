@@ -9,6 +9,12 @@ This project is a Retrieval-Augmented Generation (RAG) system that allows users 
 - Supports embedding generation using OpenAI's GPT-4 model.
 - User-friendly interface built with Streamlit.
 
+## Workflow Diagram
+
+The diagram below illustrates the overall workflow of the system, showcasing how user queries interact with the vector database, document embedding, and response generation.
+
+![Workflow Diagram](./assets/workflow-diagram.png)
+
 ## Updates
 
 - **File Upload Sidebar:** The file upload functionality is currently hidden as the vector database already contains preloaded energy datasets. 
